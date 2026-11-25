@@ -19,6 +19,30 @@ jobs:
         run: |
           unzip -oq RxGame-Icon-Assets.zip -d project/RxGameAndroid/app/src/main
 
+
+      - name: Set Launcher Icon
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          p = Path("project/RxGameAndroid/app/src/main/AndroidManifest.xml")
+          s = p.read_text()
+
+          for attr in ("icon", "roundIcon"):
+              pattern = rf'android:{attr}="[^"]*"'
+              replacement = f'android:{attr}="@mipmap/ic_launcher"'
+
+              if re.search(pattern, s):
+                  s = re.sub(pattern, replacement, s)
+              else:
+                  s = re.sub(r'<application\b',
+                             '<application ' + replacement, s, count=1)
+
+          p.write_text(s)
+          PY
+          
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
